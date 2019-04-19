@@ -1,5 +1,5 @@
 # DanganAI
-Based on the visual novel game Danganronpa by Spike Chunsoft. DanganAI aims to pit AI controlled students in a class trial given that one of the AI students is a murderer.
+Based on the visual novel game Danganronpa by Spike Chunsoft. DanganAI aims to pit AI controlled students in a class trial given that one of the AI students is a murderer. This simulation aims to determine the multitude of ways that a student can survive in a class trial
 
 ### Requirements
 * ~~Tensorflow~~
