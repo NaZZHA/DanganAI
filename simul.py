@@ -120,18 +120,24 @@ class student:
 
 			for x,y in zip(x2, y2):
 				choice = random.choice([True, False])
+				new_x = x
+				new_y = y
+
 				if choice:
-					x2[x2.index(x)] = y
-					y2[y2.index(y)] = x
+					new_x = y
+					new_y = x
 
-				x3 = np.array(x2, dtype=np.float32)
-				x3 = x3.reshape(shape)
+				x3.append(new_x)
+				y3.append(new_y)
 
-				y3 = np.array(y2, dtype=np.float32)
-				y3 = y3.reshape(shape)	
+			x3 = self.mutate(x3)
+			y3 = self.mutate(y3)
 
-			x2 = self.mutate(x2)
-			y2 = self.mutate(y2)
+			x3 = np.array(x3, dtype=np.float32)
+			x3 = x3.reshape(shape)
+
+			y3 = np.array(y3, dtype=np.float32)
+			y3 = y3.reshape(shape)	
 
 			self.weights[ind] = x3
 			other.weights[ind] = y3
