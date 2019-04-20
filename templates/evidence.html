@@ -1,0 +1,43 @@
+<html>
+	<head>
+		<title>DanganAI</title>
+		<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles.css')}}">
+	</head>
+	<body>	
+		<div style='display: flex'>
+			<div class='current_evidences'>
+				{% for i in current_evidences%}
+					<div class='evidence'>
+						<span>{{i[3]}}</span> <br>
+						<button> <a href='/remove_evidence/{{i[3]}}'> Remove </a> </button>
+					</div>
+				{% endfor %}
+			</div>
+			<div class='evidence_box' id='mrbeast6000'>
+				<form method='POST' action='/add_evidence'>
+					<span>Name</span><br>
+					<input type='text' name='evidence_name' class='student_form_input' required> <br><br>
+					<div class='involved'>
+							<div class='mentioned'>
+								<span>Incriminated</span><br><br>
+								{% for i in students %}
+									<input type='checkbox' name='{{i.name}}_incriminated' value='{{i.name}}_incriminated'><span>{{i.name}}</span><br>
+								{% endfor %}
+							</div>
+							<div class='mentioned'>
+								<span>Mentioned</span><br><br>
+								{% for i in students %}
+									<input type='checkbox' value='{{i.name}}_mentioned'><span>{{i.name}}</span><br>
+								{% endfor %}
+							</div>
+					</div>
+					<br>
+					<span>Evidence Content</span><br>
+					<textarea name='evidence_content'></textarea> <br>
+					<input type='submit'>
+				</form>
+				<button><a href='/'>Students</a></button>
+			</div>
+		</div>
+	</body>
+</html>

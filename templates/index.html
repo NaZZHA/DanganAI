@@ -1,0 +1,69 @@
+<html>
+	<head>
+		<title>DanganAI</title>
+		<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles.css')}}">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	</head>
+
+	<body>
+	</body>
+		<div class='wrapper'>
+			<div class='sidebar'>
+				<div id='student_entry_field'>
+					<h3>STUDENT REGISTRATION</h3>
+					<form method='post' action='/student_registraition' enctype="multipart/form-data">
+						{{ form.hidden_tag() }}
+						{{form.name.label(class="form-control-label")}}<br>
+						{{form.name(class_="student_form_input", autocomplete="off")}} <br><br>
+						{{form.trust_rating.label(class="form-control-label" )}}<br>
+						{{form.trust_rating(class_="student_form_input", autocomplete="off", type="number")}}<br><br>
+						{{form.analytical_rating.label(class="form-control-label")}}<br>
+						{{form.analytical_rating(class_="student_form_input", autocomplete="off", type="number")}}<br><br>
+						{{form.emotional_rating.label(class="form-control-label")}}<br>
+						{{form.emotional_rating(class_="student_form_input", autocomplete="off", type="number")}}<br><br>
+						<input type="file" name="icon" class="student_icon_input" title="/"> <br><br>
+						{{form.submit(class="form-control")}}
+						<button><a href='/reset_students'>RESET</a></button> <br><br>
+					</form>
+					<form method='post' action='/set_blackend'>
+					<span>Blackend</span>
+						<select name='blackend'>
+							<option name='random'>Random</option>
+							{% for i in students%}
+							<option name='{{i.name.lower()}}'>{{i.name}}</option>
+							{% endfor %}
+						</select>
+						<input type='submit' value='Set'>
+					</form>
+					<form method='get' action='/delete_student'>
+						DELETE STUDENT <br>
+						<input name='student_name' class='student_form_input'> <br><br>
+						<input type='submit' value="Delete"> 
+					</form>
+				</div>
+				<button id='swap'><a href='/evidence_fields'>Evidence</a></button><br><br><br>
+				<a href='/final_roll_call' class='rollcall'> ROLL CALL</a> <br><br><br>
+				<span>Messages</span><br>
+				<textarea>{{messages}}</textarea>
+				
+			</div>
+
+			<div id='student_identification'>
+					{% for student in students%}
+						<div class='student_id'>
+							{% if student.icon %}
+								<img src="{{url_for('icons', filename=student.icon)}}" alt="/static/default.jpg" width="125" height="125">
+							{% else %}
+								<img src="/static/default.jpg" alt="" width="125" height="125">
+							{% endif %}		
+							<span class='student_att'>Name<br><br> {{student.name}}</span>
+							<span class='student_att'> Analytical <br><br> {{student.analytical}}</span>
+							<span class='student_att'> Trust <br><br> {{student.trust}}</span>
+							<span class='student_att'> Emotional <br><br> {{student.emotional}}</span>
+						</div>
+					{% endfor %}
+			</div>
+
+		</div>
+	</body>
+</html>

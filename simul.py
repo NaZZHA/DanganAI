@@ -22,6 +22,7 @@ class student:
 		self.last_event = np.array([[0,0,0,0]], dtype=np.float32)
 		self.weights = []
 		self.path = save_directory + f'/{self.name}/'
+		self.icon = None
 
 		students.append(self)
 		
@@ -91,18 +92,19 @@ class student:
 		self.output_accuse = self.weights[11]
 
 	def mutate(self, weights):
-		p1 = random.randrange(0, len(weights)-1)
-		p2 = random.randrange(0, len(weights)-1)
-
-		if p2 > p1:
-			temp = p1
-			p1 = p2
-			p2 = p1
-
 		mutated_weights = weights[:]
-		lesion = weights[p1:p2]
-		random.shuffle(lesion)
-		mutated_weights[p1:p2] = lesion
+		for i in range(3):
+			p1 = random.randrange(0, len(weights)-1)
+			p2 = random.randrange(0, len(weights)-1)
+
+			if p2 > p1:
+				temp = p1
+				p1 = p2
+				p2 = p1
+
+			lesion = weights[p1:p2]
+			random.shuffle(lesion)
+			mutated_weights[p1:p2] = lesion
 		return mutated_weights
 
 	def crossver(self, other):
@@ -115,23 +117,29 @@ class student:
 			x2 = x2.tolist()
 			y2 = y2.tolist()
 
-			x3 = None
-			y3 = None
+			x3 = []
+			y3 = []
 
 			for x,y in zip(x2, y2):
 				choice = random.choice([True, False])
+				new_x = x
+				new_y = y
+
 				if choice:
-					x2[x2.index(x)] = y
-					y2[y2.index(y)] = x
+					new_x = y
+					new_y = x
 
-				x3 = np.array(x2, dtype=np.float32)
-				x3 = x3.reshape(shape)
+				x3.append(new_x)
+				y3.append(new_y)
 
-				y3 = np.array(y2, dtype=np.float32)
-				y3 = y3.reshape(shape)	
+			x3 = self.mutate(x3)
+			y3 = self.mutate(y3)
 
-			x2 = self.mutate(x2)
-			y2 = self.mutate(y2)
+			x3 = np.array(x3, dtype=np.float32)
+			x3 = x3.reshape(shape)
+
+			y3 = np.array(y3, dtype=np.float32)
+			y3 = y3.reshape(shape)	
 
 			self.weights[ind] = x3
 			other.weights[ind] = y3
@@ -143,9 +151,11 @@ class student:
 	def evidence_analysis(self, evidence):
 
 		l1 = np.matmul(evidence, self.w1_evidence)
+		l1 *= self.analytical 
 		l1 = relu(l1)
 
 		l2 = np.matmul(l1, self.w2_evidence)
+		l2 *= self.emotional
 		l2 = relu(l2)
 
 		output_layer = np.matmul(l2, self.output_evidence)
@@ -236,6 +246,11 @@ class roster:
 		for i in self.students:
 			i.init_weights()
 
+	def remove_student(self, student):
+		for i in self.students:
+			if i == self.search(student):
+				self.students.pop(self.students.index(i))
+
 	def sort_according_to_fitness(self):
 		self.students_according_to_fitness.sort(key=lambda x: x.fitness)
 		
@@ -315,7 +330,7 @@ class class_trial:
 		else:
 			self.blackend.fitness += self.rewards['blackend_win']
 
-		rost.sort_according_to_fitness()
+		self.roster.sort_according_to_fitness()
 
 	def reset(self):
 		self.moves = 0
@@ -324,6 +339,76 @@ class class_trial:
 		self.blackend_votes = 0
 		self.blackend_deny = 0
 		self.stated_evidences = []
+
+	def next_phase_from_server(self):
+		print(f'PHASE{self.current_phase}')
+		self.max_moves = random.randrange(4, 14)
+		phase_moves = []
+		for i in range(self.max_moves):
+			choosing = random.choice(self.roster.students)
+
+			if self.moves == 0:
+				self.current_evidence = random.choice(self.evidences)
+				self.current_evidence.state(choosing)
+				self.current_evidence_with_statment = self.current_evidence.state(choosing)
+				self.current_suspect = choosing.accuse(self.current_evidence_with_statment)
+				self.moves += 1
+				continue
+			self.moves += 1
+			action = choosing.decide(self.current_evidence_with_statment, self.current_suspect)
+			act = None
+			if action[0] == 1:
+				act = 'Accuse'
+				self.current_suspect = choosing.accuse(self.current_evidence_with_statment)
+				if self.roster.students[self.current_suspect.index(1)] == self.blackend:
+					choosing.fitness += self.rewards['correct_accusation']
+				else:
+					choosing.fitness -= self.rewards['incorrect_accustation']
+					self.blackend.fitness += 2	
+
+				self.blackend_votes = 0
+				self.blackend_deny = 0			
+
+			if action[1] == 1:
+				act = 'Agree'
+				self.blackend_votes += 1
+
+				if self.blackend_deny >= 3:
+					self.blackend_votes = 0
+					self.blackend_deny = 0
+
+				if self.blackend_votes >= int(len(self.roster.students) * 0.75):
+					self.final_reward()
+					return 0
+
+				if self.roster.students[self.current_suspect.index(1)] == self.blackend:
+					choosing.fitness += self.rewards['correct_consent']
+				else:
+					choosing.fitness += self.rewards['incorrect_consent']
+
+			if action[2] == 1:
+				act = 'Deny'
+				self.blackend_deny += 1
+				if self.blackend_deny >= 3:
+					self.blackend_votes = 0
+					self.blackend_deny = 0
+
+				if not self.roster.students[self.current_suspect.index(1)] == self.blackend:
+					choosing.fitness += self.rewards['correct_counter']
+				else:
+					choosing.fitness += self.rewards['incorrect_counter']
+
+			if action[3] == 1:
+				act = 'State'
+				self.current_evidence = random.choice(self.evidences)
+				self.current_evidence_with_statment = self.current_evidence.state(choosing)
+				choosing.fitness += self.rewards['statement_of_evidence']
+
+			print(f'{choosing.name} : {act}, {self.roster.students[self.current_suspect.index(1)].name}')
+
+			phase_moves.append([choosing, act, self.roster.students[self.current_suspect.index(1)].name])
+
+		return phase_moves
 
 	def next_phase(self):
 		self.current_phase += 1
@@ -401,10 +486,17 @@ class class_trial:
 class evidence:
 	def __init__(self, roster, incriminated, mentioned):
 		self.student_roster = roster
+		self.i = incriminated
+		self.m = mentioned
 		self.incriminated = self.__get_incriminated(incriminated)
 		self.mentioned = self.__get_mentioned(mentioned)
 		self.uninvolved = self.__get_uninvolved()
-		self.statement = ''
+		self.content = ''
+
+	def update(self):
+		self.incriminated = self.__get_incriminated(i)
+		self.mentioned = self.__get_mentioned(m)
+		self.uninvolved = self.__get_uninvolved()	
 
 	def __get_incriminated(self, names):
 		incriminated = []
@@ -451,52 +543,3 @@ class evidence:
 				speaker_ind.append(0)
 
 		return np.array([self.incriminated, self.mentioned, self.uninvolved, speaker_ind])
-names = ['Dazo', 'Kaede', 'Akko', 'Tachanka', 'Cutab', 'Montagne', 'Shuichi', 'Sucy', 'Ochako', 'Lotte']
-
-rost = roster([student(i) for i in names])
-
-dazo = rost.search('dazo')
-akko = rost.search('akko')
-kaede = rost.search('kaede')
-
-e1 = evidence(rost, ['Dazo', 'Sucy', 'Ochako'], ['Kaede', 'Akko', 'Shuichi', 'Lotte'])
-e2 = evidence(rost, ['Tachanka', 'Akko', 'Dazo'], ['Montagne', 'Cutab', 'Shuichi'])
-e3 = evidence(rost, ['Dazo'], ['Tachanka', 'Kaede', 'Akko'])
-e4 = evidence(rost, ['Montagne', 'Kaede'], ['Akko', 'Sucy', 'Cutab', 'Ochako'])
-e5 = evidence(rost, ['Cutab', 'Akko'], ['Sucy'])
-e6 = evidence(rost, ['Kaede', 'Shuichi', 'Lotte'], ['Tachanka', 'Montagne'])
-e7 = evidence(rost, ['Lotte', 'Akko', 'Sucy'], ['Kaede', 'Shuichi'])
-e8 = evidence(rost, ['Dazo'], ['Lotte', 'Akko', 'Sucy'])
-
-def run(roster, steps=2):
-	for i in range(steps):
-		print(f'\n###########################\nTRIAL {i+1}\n###########################\n')
-		trial = class_trial(roster)
-		trial.add_evidence(e1, e2, e3, e4, e5, e6, e7, e8)
-		trial.set_blackened(dazo)
-		trial.next_phase()	
-
-		for s in roster.students:
-			print(f'{s.name} : {s.fitness}')
-
-		students_according_to_fitness = roster.students_according_to_fitness[::-1]
-		students_according_to_fitness.remove(trial.blackend)
-		halfpoint = int(len(students_according_to_fitness) / 2) - 1
-
-		for x in students_according_to_fitness[:halfpoint-1]:
-			temp = students_according_to_fitness[:halfpoint-1]
-			temp.remove(x)
-			mate = random.choice(temp)
-			x.crossver(mate)
-			print(f'genetic crossover between {x.name} and {mate.name}')
-
-		for x in students_according_to_fitness[halfpoint+1:]:
-			temp = students_according_to_fitness[halfpoint+1:]
-			temp.remove(x)
-			mate = random.choice(temp)
-			x.crossver(mate)
-			print(f'genetic crossover between {x.name} and {mate.name}')
-
-	rost.save_student_weights()
-
-run(rost)

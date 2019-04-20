@@ -1,0 +1,30 @@
+<html>
+	<head>
+		<title>DanganAI</title>
+		<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles.css')}}">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	</head>
+	<body>
+		<div class='roster_container'>
+			<span>Roll Call</span>
+			<div class='roster_wrapper'>
+					{% for student in students %}
+					<div class='student_rollcall'>
+						{% if student.icon %}
+							<img src="{{url_for('icons', filename=student.icon)}}" alt="/static/default.jpg" width="115" height="115"><br>
+						{% else %}
+							<img src="/static/default.jpg" alt="" width="115" height="115"><br>
+						{% endif %}	
+							<span>{{student.name}}</span>
+					</div>
+					{% endfor %}
+			</div>
+			<br><br><br>
+
+			<div class='special'>
+				<span> Begin Class Trial for the murder of <input class='victim_name'></span><br>
+				<a href='/trial_init'>Begin</a>
+			</div>
+		</div>
+	</body>
+</html>

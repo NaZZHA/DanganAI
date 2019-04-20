@@ -1,0 +1,35 @@
+<html>
+	<head>
+		<title>DanganAI</title>
+		<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles.css')}}">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	</head>
+
+	<body>
+		<div class='trial_events'>
+			{% for i in events%}
+				<div class='event'>
+					{% if i[0].icon %}
+						<img src="{{url_for('icons', filename=student.icon)}}" alt="/static/default.jpg" width="125" height="125"> <br>
+					{% else %}
+						<img src="/static/default.jpg" alt="" width="125" height="125"><br>
+					{% endif %}	
+
+					{% if i[1] == 'Accuse' %}
+						<span>{{i[0].name}} accuses {{i[2]}} of the crime</span>
+
+					{% elif i[1] == 'Agree' %}
+						<span>{{i[0].name}} agrees with the accusation</span>	
+
+					{% elif i[1] == 'Deny' %}
+						<span>{{i[0].name}} denies the accusation</span>
+
+					{% else %}	
+						<span>{{i[0].name}} denies the accusation</span>
+					{% endif %}							
+				</div> <br>
+			{% endfor %}
+			<a href='/main_event'>NEXT PHASE</a>
+		</div>
+	</body>
+</html>

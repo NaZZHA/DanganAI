@@ -1,0 +1,168 @@
+.sidebar{
+	border-right: 1px solid #D3D3D3;
+	box-shadow: 1px 1px 1px #D3D3D3;
+	padding-right: 25px;
+	text-align: center;
+	height: 100%;
+	position: fixed;
+	background: white;
+}
+
+button{
+	border: 1px solid #D3D3D3;
+	box-shadow: 1px 1px 1px #D3D3D3;
+}
+
+input[type=submit]{
+	border: 1px solid #D3D3D3;
+	box-shadow: 1px 1px 1px #D3D3D3;
+}
+
+.evidence{
+	padding: 10px;
+	text-align: center;
+}
+
+.current_evidences {
+	border: 2px solid black;
+	height: 98%;
+	overflow: auto;
+	width: 250px;
+}
+
+textarea {
+   resize: none;
+   width: 300px;
+   height: 200px;
+}
+
+.involved {
+	display: flex;
+	margin-left: 15%;
+	margin-right: 15%;
+}
+
+.victim_name {
+	border: none;
+	text-align: center;
+	border-bottom: 2px solid black;
+}
+
+.event {
+	text-align: center;
+}
+
+.trials_events {
+	text-align: center;
+	align-content: center;
+}
+
+.roster_container{
+	text-align: center;
+	align-items: center;
+	flex-wrap: wrap;
+	border: 2px solid black;
+	width: 52%;
+	margin-top: 5%;
+	margin-left: 25%;
+	padding: 25px;
+}
+
+.roster_wrapper{
+	display: flex;
+	flex-wrap: wrap;
+	content-align:center;
+}
+
+.rollcall {
+	padding: 25px;
+	background: #20B2AA;
+	border: none;
+	border-radius: 15px;
+	text-decoration: none;
+	color:white;
+}
+
+.student_rollcall {
+	padding-right: 25px;
+	padding-left: 25px;
+}
+
+.mentioned{
+	padding:15px;
+	width: 250px;
+	border: 1px solid black;
+}
+
+.evidence_box {
+	margin-left: 25%;
+	margin-top: 5%;
+	width: 25%;
+	height: 75%; 
+	text-align: center;
+	padding: 25px;
+	border-radius: 25px;
+	border: 2px solid #D3D3D3;
+	box-shadow: 1px 1px 1px #D3D3D3;
+}
+
+textarea {
+	border: 1px solid #D3D3D3;
+	box-shadow: 1px 1px 1px #D3D3D3;
+	border-radius: 5px;
+	padding: 10px;	
+}
+
+.student_form_input {
+	border: 1px solid #D3D3D3;
+	box-shadow: 1px 1px 1px #D3D3D3;
+	border-radius: 5px;
+	padding: 10px;
+}
+
+.student_identification{
+	/*padding: 26px;*/
+	width: 100%;
+	position: absolute;
+	display: flex;
+	flex-direction: column;
+	overflow: auto;
+	height: 1080px;
+}
+
+.student_entry_field {
+	text-align: center;
+}
+
+.wrapper{
+	display : flex;
+}
+.student_rollcall{
+	text-align: center;
+}
+
+.student_id {
+	border-top: 2px solid #D3D3D3;
+	border-left: 2px solid #D3D3D3;
+	border-right: 2px solid #D3D3D3;
+	overflow-x: none;
+	display: flex;
+	padding-top: 10px;
+	padding-left: 25px;
+	font-size: 20px;
+	margin-left: 49%;
+	width: 100%;
+	padding-right: 125px;
+	padding-bottom: 25px;
+	height: 150px;
+}
+
+.student_icon_input {
+	overflow:hidden;
+}
+
+.student_att {
+	padding-top: 5px;
+	padding-left: 25px;
+	text-align: center;
+}
