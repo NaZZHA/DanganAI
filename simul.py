@@ -138,6 +138,15 @@ class student:
 			x3 = np.array(x3, dtype=np.float32)
 			x3 = x3.reshape(shape)
 
+				x3.append(new_x)
+				y3.append(new_y)
+
+			x3 = self.mutate(x3)
+			y3 = self.mutate(y3)
+
+			x3 = np.array(x3, dtype=np.float32)
+			x3 = x3.reshape(shape)
+
 			y3 = np.array(y3, dtype=np.float32)
 			y3 = y3.reshape(shape)	
 
