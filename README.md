@@ -4,6 +4,7 @@ Based on the visual novel game Danganronpa by Spike Chunsoft. DanganAI aims to p
 ### Requirements
 * ~~Tensorflow~~
 * NumPy
+* Flask
 * Python
 
 
@@ -15,12 +16,16 @@ After the trial is when the agents are evaluated based on their decisions during
 
 ### What's New?
 
+* #### Version 0.3
+	* Added the web interface for ease of interaction 	
+
+
 * #### Version 0.2
 	* Removed the Tensorflow Requirement. All computation is now based purely on NumPy
 
 
-
 ### To-Do List
-* Implement stats per student
-* Build the necessary GUI component of the project 
+* ~~Implement stats per student~~
+* ~~Build the necessary GUI component of the project~~
+* Fix the current implementation of the web interface
 * Optimize the program
