@@ -16,6 +16,11 @@ After the trial is when the agents are evaluated based on their decisions during
 
 ### What's New?
 
+* #### Version 0.4
+	* Implemented the Genetic Algorithm to the web interface
+	* Fixed bug where agents would not start with proper shapes 
+
+
 * #### Version 0.3
 	* Added the web interface for ease of interaction 	
 

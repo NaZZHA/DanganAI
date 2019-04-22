@@ -7,8 +7,32 @@
 	position: fixed;
 	background: white;
 }
+.student_finale_reward {
+	border: 1px solid #D3D3D3;
+	display: flex;
+	text-align: center;
+	padding: 25px;
+	background-color: white;
+	width: 300px;
+	border-radius: 5px;
+}
+
+.student_container{
+	display: flex;
+	flex-direction: column-reverse;
+}
+
+.name_fitness{
+	margin-top: 45px;
+	margin-left: 35px;
+}
 
 button{
+	border: 1px solid #D3D3D3;
+	box-shadow: 1px 1px 1px #D3D3D3;
+}
+
+input[type=button]{
 	border: 1px solid #D3D3D3;
 	box-shadow: 1px 1px 1px #D3D3D3;
 }
@@ -22,7 +46,10 @@ input[type=submit]{
 	padding: 10px;
 	text-align: center;
 }
-
+a {
+	text-decoration: none;
+	color: black;
+}
 .current_evidences {
 	border: 2px solid black;
 	height: 98%;
@@ -35,7 +62,9 @@ textarea {
    width: 300px;
    height: 200px;
 }
-
+.messages{
+	height: 100px;
+}
 .involved {
 	display: flex;
 	margin-left: 15%;

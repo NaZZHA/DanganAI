@@ -10,7 +10,7 @@
 			{% for i in events%}
 				<div class='event'>
 					{% if i[0].icon %}
-						<img src="{{url_for('icons', filename=student.icon)}}" alt="/static/default.jpg" width="125" height="125"> <br>
+						<img src="{{url_for('icons', filename=i[0].icon)}}" alt="/static/default.jpg" width="125" height="125"> <br>
 					{% else %}
 						<img src="/static/default.jpg" alt="" width="125" height="125"><br>
 					{% endif %}	
@@ -25,7 +25,7 @@
 						<span>{{i[0].name}} denies the accusation</span>
 
 					{% else %}	
-						<span>{{i[0].name}} denies the accusation</span>
+						<span>{{i[0].name}} makes a statement</span>
 					{% endif %}							
 				</div> <br>
 			{% endfor %}

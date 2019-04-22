@@ -4,13 +4,10 @@ import random
 import matplotlib.pyplot as plt
 from statistics import median
 import os
+import json
 
-students = []
+_students_ = []
 save_directory = './character_data'
-
-
-if not os.path.exists(save_directory):
-	os.mkdir(save_directory)
 
 class student:
 	def __init__(self, name):
@@ -24,12 +21,31 @@ class student:
 		self.path = save_directory + f'/{self.name}/'
 		self.icon = None
 
-		students.append(self)
+		_students_.append(self)
 		
+
+	def save(self):
+		self.save_weights()
+		return {'name' : self.name, 'analytical': self.analytical, 'trust': self.trust, 'emotional': self.emotional, 'icon': self.icon}
+
+	def load(self, json_string):
+		f = json.loads(json_string)
+		
+		self.name = f['name']
+		self.analytical = f['analytical']
+		self.emotional = f['emotional']
+		self.trust  = f['trust']
+		self.icon = f['icon']
+
+		if os.path.exists(self.path):
+			self.load_weights()
+
+
 	def init_stats(self, analytical, trust, emotional):
 		self.analytical = analytical
 		self.emotional = emotional
 		self.trust = trust
+
 
 	def save_weights(self):
 		if not os.path.exists(self.path):
@@ -49,18 +65,17 @@ class student:
 		for i in files:
 			loaded_weights.append(np.load(self.path + i))
 
-		for x, y in zip(self.weights, loaded_weights):
-			ind = self.weights.index(x)
-			self.weights[ind] = y
+		for x, y in zip(range(len(self.weights)), loaded_weights):
+			self.weights[x] = y
 
 		self.set_weights()
 
-	def init_weights(self):
+	def init_weights(self, x):
 		####################
 		# CLASS TRIAL VARS #
 		####################
 		self.shapes = []
-		self.w1_evidence = random_normal([len(students), 7])
+		self.w1_evidence = random_normal([x, 7])
 		self.w2_evidence = random_normal([7, 2])
 		self.output_evidence = random_normal([2, 1])
 		self.w1_event = random_normal([4, 2])
@@ -71,7 +86,7 @@ class student:
 		self.output_final = random_normal([1, 2])
 		self.w1_accuse = random_normal([4, 3])
 		self.w2_accuse = random_normal([3, 2])
-		self.output_accuse = random_normal([2, len(students)])
+		self.output_accuse = random_normal([2, x])
 
 		self.weights += [self.w1_evidence, self.w2_evidence, self.output_evidence, self.w1_event, self.w2_event, self.output_event, self.w1_final, self.w2_final, self.output_final, self.w1_accuse, self.w2_accuse, self.output_accuse]
 		for i in self.weights:
@@ -108,9 +123,12 @@ class student:
 		return mutated_weights
 
 	def crossver(self, other):
+		print(self.name)
+		print(other.name)
 		for x1, y1, shape, ind in zip(self.weights, other.weights, self.shapes, range(len(self.weights))):
 			area = shape[0] * shape[1]
-
+			print(x1.shape)
+			print(y1.shape)
 			x2 = x1.reshape([area])
 			y2 = y1.reshape([area])
 
@@ -138,15 +156,6 @@ class student:
 			x3 = np.array(x3, dtype=np.float32)
 			x3 = x3.reshape(shape)
 
-				x3.append(new_x)
-				y3.append(new_y)
-
-			x3 = self.mutate(x3)
-			y3 = self.mutate(y3)
-
-			x3 = np.array(x3, dtype=np.float32)
-			x3 = x3.reshape(shape)
-
 			y3 = np.array(y3, dtype=np.float32)
 			y3 = y3.reshape(shape)	
 
@@ -160,11 +169,11 @@ class student:
 	def evidence_analysis(self, evidence):
 
 		l1 = np.matmul(evidence, self.w1_evidence)
-		l1 *= self.analytical 
+		#l1 -= self.analytical * reciprocal(self.emotional)
 		l1 = relu(l1)
 
 		l2 = np.matmul(l1, self.w2_evidence)
-		l2 *= self.emotional
+		#l2 *= self.emotional
 		l2 = relu(l2)
 
 		output_layer = np.matmul(l2, self.output_evidence)
@@ -196,6 +205,7 @@ class student:
 
 		l2 = np.matmul(l1, self.w2_final)
 		l2 = relu(l2)
+		#l2 *= self.emotional
 
 		output_layer = np.matmul(l2, self.output_final)
 		output_layer = softmax(output_layer)
@@ -220,9 +230,11 @@ class student:
 	def accuse(self, evidence):
 		inputs = self.evidence_analysis(evidence)
 		l1 = np.matmul(inputs, self.w1_accuse)
+		#l1 += self.emotional / reciprocal(self.trust)
 		l1 = relu(l1)
 
 		l2 = np.matmul(l1, self.w2_accuse)
+		#l2 += self.emotional / reciprocal(self.trust)
 		l2 = relu(l2)
 
 		output_layer = np.matmul(l2, self.output_accuse)
@@ -241,19 +253,53 @@ class roster:
 	def __init__(self, starting_roster=[], initialize_variables=True):
 		self.students = starting_roster
 		self.students_according_to_fitness = self.students
+		self.couples = []
 
 		if initialize_variables and starting_roster:
 			for i in self.students:
-					i.init_weights()
+				i.init_weights(len(self.students))
+
+	def create_couples(self):
+		self.couples.clear()
+		halfpoint = int(len(self.students) / 2)
+		upper_half = self.students_according_to_fitness[halfpoint:]
+		lower_half = self.students_according_to_fitness[:halfpoint]
+		for i in upper_half:
+			x = upper_half[:]
+			x.remove(i)
+			self.couples.append([i, random.choice(x)])
+
+		for i in lower_half:
+			x = lower_half[:]
+			x.remove(i)
+			self.couples.append([i, random.choice(x)])		
+
+		self.couples.sort(key=lambda x: x[0].fitness)
+
+		for x,y in self.couples:
+			x.crossver(y)
 
 	def init_agents(self):
 		for i in self.students:
-			i.init_weights()
+			x = len(self.students)
+			i.init_weights(x)
 
-	def add_student(self, student):
-		self.students.append(student)
-		for i in self.students:
-			i.init_weights()
+	def add_student(self, s):
+		self.students.append(s)
+		f = self.students[:]
+
+		self.students.clear()
+		for i in f:
+			x = student(i.name)
+			x.init_weights(len(f))
+			x.init_stats(i.analytical, i.trust, i.emotional)
+			x.icon = i.icon
+			self.students.append(x)
+
+	def debug(self):
+		x = len(self.students)
+		#i.init_weights(x)
+		print(f'{i.name} : {i.weights[0].shape} : {x}')
 
 	def remove_student(self, student):
 		for i in self.students:
@@ -329,8 +375,9 @@ class class_trial:
 
 	def final_reward(self):
 		ind = self.current_suspect
-		print(self.roster.students[ind.index(1)].name)
+		w = None
 		if self.roster.students[ind.index(1)] == self.blackend:
+			w = 'Spotless'
 			for i in self.roster.students:
 				if not i == self.blackend:
 					i.fitness += self.rewards['survivor_win']
@@ -338,8 +385,11 @@ class class_trial:
 					i.fitness -= 200
 		else:
 			self.blackend.fitness += self.rewards['blackend_win']
+			w='Blackend'
 
 		self.roster.sort_according_to_fitness()
+		self.roster.create_couples()
+		return w
 
 	def reset(self):
 		self.moves = 0
@@ -350,22 +400,24 @@ class class_trial:
 		self.stated_evidences = []
 
 	def next_phase_from_server(self):
-		print(f'PHASE{self.current_phase}')
+		print(self.current_suspect)
 		self.max_moves = random.randrange(4, 14)
 		phase_moves = []
 		for i in range(self.max_moves):
 			choosing = random.choice(self.roster.students)
-
+			act = None
 			if self.moves == 0:
 				self.current_evidence = random.choice(self.evidences)
 				self.current_evidence.state(choosing)
 				self.current_evidence_with_statment = self.current_evidence.state(choosing)
 				self.current_suspect = choosing.accuse(self.current_evidence_with_statment)
 				self.moves += 1
+				phase_moves.append([choosing, act, self.roster.students[self.current_suspect.index(1)].name])
 				continue
 			self.moves += 1
+			
 			action = choosing.decide(self.current_evidence_with_statment, self.current_suspect)
-			act = None
+			print(i)
 			if action[0] == 1:
 				act = 'Accuse'
 				self.current_suspect = choosing.accuse(self.current_evidence_with_statment)
@@ -493,7 +545,8 @@ class class_trial:
 			self.next_phase()
 
 class evidence:
-	def __init__(self, roster, incriminated, mentioned):
+	def __init__(self, name, roster, incriminated, mentioned):
+		self.name = name
 		self.student_roster = roster
 		self.i = incriminated
 		self.m = mentioned
@@ -503,8 +556,8 @@ class evidence:
 		self.content = ''
 
 	def update(self):
-		self.incriminated = self.__get_incriminated(i)
-		self.mentioned = self.__get_mentioned(m)
+		self.incriminated = self.__get_incriminated(self.i)
+		self.mentioned = self.__get_mentioned(self.m)
 		self.uninvolved = self.__get_uninvolved()	
 
 	def __get_incriminated(self, names):
@@ -552,3 +605,17 @@ class evidence:
 				speaker_ind.append(0)
 
 		return np.array([self.incriminated, self.mentioned, self.uninvolved, speaker_ind])
+
+	def save():
+		i = []
+		m = []
+		for x, y  in zip(range(len(self.incriminated)), self.roster.students):
+			if self.incriminated[x] == 1:
+				i.append(y.name)
+
+		for x, y  in zip(range(len(self.mentioned)), self.roster.students):
+			if self.mentioned[x] == 1:
+				m.append(y.name)
+
+		return {'name' : self.name, 'incriminated' : i, 'mentioned': m}
+

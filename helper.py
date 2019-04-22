@@ -13,8 +13,8 @@ def clean_filename(fn):
 			continue
 		new_filename.append(i)
 	return ''.join(new_filename)
-print(clean_filename('download (1).jpg'))
 
 softmax = lambda x : np.exp(x) / np.sum(np.exp(x), axis=0) 
 relu = lambda x: x * (x > 0)
 sigmoid = lambda x : 1 / (1 + np.exp(-x))
+reciprocal = lambda x : 1 / (x + 1)

@@ -21,10 +21,21 @@
 						{{form.analytical_rating(class_="student_form_input", autocomplete="off", type="number")}}<br><br>
 						{{form.emotional_rating.label(class="form-control-label")}}<br>
 						{{form.emotional_rating(class_="student_form_input", autocomplete="off", type="number")}}<br><br>
-						<input type="file" name="icon" class="student_icon_input" title="/"> <br><br>
+						<input type='button' id="upload_icon_button" value='Upload Icon'>
+						<input type="file" name="icon" class="student_icon_input" title="/" id='upload_icon' hidden> <br><br><br>
 						{{form.submit(class="form-control")}}
-						<button><a href='/reset_students'>RESET</a></button> <br><br>
+						<button><a href='/reset_students'>RESET</a></button>
 					</form>
+					<div style='display: inline;'>
+						<form method='post' action='/load_save' enctype="multipart/form-data">
+							<input type='file' id="upload_savefile" name='save_data' hidden>
+							<input type='button' id='load_json' value='Load JSON'>
+							<input type='submit' id='submit_json_file' hidden>
+						</form>
+						
+						<button> <a href='/save'>Save JSON</a></button><br><br>
+						<button> <a href='/init_weights'>Initialize Weights</a></button> <br><br>
+					</div>
 					<form method='post' action='/set_blackend'>
 					<span>Blackend</span>
 						<select name='blackend'>
@@ -44,13 +55,14 @@
 				<button id='swap'><a href='/evidence_fields'>Evidence</a></button><br><br><br>
 				<a href='/final_roll_call' class='rollcall'> ROLL CALL</a> <br><br><br>
 				<span>Messages</span><br>
-				<textarea>{{messages}}</textarea>
+				<textarea class='messages'>{{messages}}</textarea>
 				
 			</div>
 
 			<div id='student_identification'>
 					{% for student in students%}
 						<div class='student_id'>
+						
 							{% if student.icon %}
 								<img src="{{url_for('icons', filename=student.icon)}}" alt="/static/default.jpg" width="125" height="125">
 							{% else %}
@@ -65,5 +77,6 @@
 			</div>
 
 		</div>
+		<script src="{{url_for('static', filename='script.js')}}"></script>		
 	</body>
 </html>

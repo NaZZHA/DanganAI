@@ -4,17 +4,64 @@ from flask import *
 from forms import *
 import os
 import random
+import json
 
 app = Flask(__name__, static_url_path='/static')
 app.config['SECRET_KEY'] = '1c797507e22de341db7c9a8f89df28e5'
 app.config['UPLOAD_FOLDER'] = './icons/'
 evidence_structure = []
 evidences = []
+students = []
 roster = simul.roster()
 messages = []
 blackend = 'Random'
 trial = simul.class_trial(roster)
 phase = 0
+
+@app.route('/init_weights')
+def init_weights():
+	for i in roster.students:
+		i.init_weights(len(roster.students))
+	return redirect('/')
+
+@app.route('/load_save', methods=['POST'])
+def load_save():
+	print(request.files['save_data'])
+	f = request.files['save_data']
+	fd = f.read().decode("utf-8") 
+	json_str = json.loads(fd)
+	roster.students.clear()
+	evidence_structure.clear()
+	for i in json_str['players']:
+		s = simul.student(i['name'])
+		f = json.dumps(i)
+		roster.add_student(s)
+		roster.search(i['name']).load(f)
+	
+	for i in json_str['evidences']:
+		evidence_structure.append([i['incriminated'], i['mentioned'], i['content'], i['name']])
+
+	return redirect('/')
+
+@app.route('/save')
+def save():
+	save_dict = {
+		'players' : [],
+		'evidences' : []
+	}
+	for i in roster.students:
+		i.save_weights()
+		save_dict['players'].append(i.save())
+
+	for i in evidence_structure:
+		e = {'name' : i[3], 'incriminated' : i[0], 'mentioned': i[1], 'content': i[2]}
+		save_dict['evidences'].append(e)
+
+	f_content = json.dumps(save_dict)
+	with open('save.json', 'w') as file:
+		json.dump(save_dict, file)
+	return redirect('/')
+
 
 @app.route('/')
 def index():
@@ -30,21 +77,33 @@ def set_blackend():
 	if name == 'Random':
 		s = random.choice(roster.students)
 		name = s.name
+	blackend = name
 	messages.append(f'blackend set to {name}')
 	return redirect('/')
 
+@app.route('/wrap_up')
+def finale():
+	f = trial.final_reward()
+	return render_template('reward.html', win=f, students=roster.students_according_to_fitness, blackend=trial.blackend, couples=roster.couples)
+
 @app.route('/evidence_fields')
 def evidence():
-	return render_template('evidence.html', students=roster.students, current_evidences=evidence_structure)
+	return render_template('evidence.html' ,students=roster.students, current_evidences=evidence_structure)
 
 @app.route('/trial_init')
 def init_trial():
+	print(len(roster.students))
 	trial.reset()
 	trial.set_blackened(roster.search(blackend))
+	for i in roster.students:
+		i.fitness = 0
 	for i in evidence_structure:
-		e = simul.evidence(roster, i[0], i[1])
+		e = simul.evidence(i[3], roster, i[0], i[1])
 		e.content = i[2]
 		trial.add_evidence(e)
+
+	for i in trial.evidences:
+		i.update()
 
 	return redirect('/main_event')
 
@@ -59,7 +118,7 @@ def class_trial():
 	if trial.current_phase < 4:
 		return render_template('trial.html', events=events, search=roster.search)
 	else:
-		return redirect('/')
+		return redirect('/wrap_up')
 
 
 @app.route('/add_evidence', methods=['POST'])
@@ -84,12 +143,7 @@ def add_evidence():
 	evidence_structure.append([incriminated, mentioned, content, name])
 	t = [incriminated, mentioned, content, name]
 
-	e = simul.evidence(roster, t[0], t[1])
-	print(e.state(random.choice(roster.students)))
-	e = simul.evidence(roster, evidence_structure[0][0], evidence_structure[0][1])
-	print(e.state(random.choice(roster.students)))
-	print(evidence_structure)
-	print(request.form.get('evidence_name'))
+	e = simul.evidence(name, roster, t[0], t[1])
 	return redirect('/evidence_fields')
 
 @app.route('/remove_evidence/<evidence_name>')
@@ -138,6 +192,10 @@ def student_registraition():
 	emotion = int(emotion)
 
 	student = simul.student(name)
+
+	if not os.path.exists('./icons'):
+		os.mkdir('./icons')
+
 	if len(request.files)==1:
 		file = request.files['icon']
 		if file.filename == '':
@@ -145,13 +203,12 @@ def student_registraition():
 			roster.search(name).init_stats(analytical, trust, emotion)
 			return redirect('/')			
 		
-		print(file)
 		x = file.save(os.path.join('./icons', clean_filename(file.filename)))
-		print(x)
 		student.icon = clean_filename(file.filename)
 
 	student.init_stats(analytical, trust, emotion)
 	roster.add_student(student)
+	print(student.analytical)
 	return redirect('/')
 
 @app.route('/reset_students')
@@ -164,7 +221,6 @@ def reset():
 
 @app.route('/delete_student')
 def delete_student():
-	print(request.form.get('student_name'))
 	if 'student_name' in request.args:
 		for i in roster.students:
 			if i.name == request.args['student_name']:

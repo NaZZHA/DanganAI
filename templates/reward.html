@@ -1,0 +1,38 @@
+<html>
+	<head>
+		<title>DanganAI</title>
+		<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles.css')}}">
+	</head>
+	<body>
+		<div>
+			<h4>The {{win}} Wins!</h4>
+			<span>The Blackened was {{blackend.name}}</span>
+		</div>
+		<div class='wrapper'>
+			<div class='student_container'>
+					{% for i in students %}
+						<div class='student_finale_reward'>
+							{% if i.icon %}
+								<img src="{{url_for('icons', filename=i.icon)}}" alt="/static/default.jpg" width="125" height="125"> <br>
+							{% else %}
+								<img src="/static/default.jpg" alt="" width="125" height="125"><br>
+							{% endif %}	
+							<div class='name_fitness'>{{i.name}} : {{i.fitness}}</div>
+						</div> <br>
+					{% endfor%}
+			</div>
+			<div class='student_container'>
+				{% for i in couples %}
+					<div class='student_finale_reward'>
+						{% if i[1].icon %}
+							<img src="{{url_for('icons', filename=i[1].icon)}}" alt="/static/default.jpg" width="125" height="125"> <br>
+						{% else %}
+							<img src="/static/default.jpg" alt="" width="125" height="125"><br>
+						{% endif %}	
+						<div class='name_fitness'>{{i[1].name}} : {{i[1].fitness}}</div>
+					</div> <br>
+				{% endfor%}				
+			</div>
+		</div>
+	</body>
+</html>
