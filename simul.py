@@ -48,6 +48,9 @@ class student:
 
 
 	def save_weights(self):
+		if not os.path.exists('./character_data'):
+			os.mkdir('./character_data')
+
 		if not os.path.exists(self.path):
 			os.mkdir(self.path)
 
@@ -177,7 +180,7 @@ class student:
 		l2 = relu(l2)
 
 		output_layer = np.matmul(l2, self.output_evidence)
-		output_layer = sigmoid(output_layer)
+		output_layer = relu(output_layer)
 		out = np.reshape(output_layer, [1,4])
 
 		return out
@@ -190,7 +193,7 @@ class student:
 		l2 = relu(l2)
 
 		output_layer = np.matmul(l2, self.output_event)
-		out = sigmoid(output_layer)
+		out = relu(output_layer)
 
 		return out
 

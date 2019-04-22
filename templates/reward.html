@@ -4,7 +4,7 @@
 		<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles.css')}}">
 	</head>
 	<body>
-		<div>
+		<div align="center">
 			<h4>The {{win}} Wins!</h4>
 			<span>The Blackened was {{blackend.name}}</span>
 		</div>
@@ -33,6 +33,9 @@
 					</div> <br>
 				{% endfor%}				
 			</div>
+
+			<a href='/'>HOME</a> 
+			<a href='/trial_init'>RESTART</a>
 		</div>
 	</body>
 </html>
